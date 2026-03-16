@@ -1,6 +1,6 @@
 # Therapy Clinic System
 
-Full project (next step after notes-api).
+A second version of my Therapy Clinic System, with more features and better architecture, remade from scratch.
 
 ## Modules
 - backend: Spring Boot API
