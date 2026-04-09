@@ -65,7 +65,7 @@ public class Patient {
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
-    protected Patient() {
+    public Patient() {
     }
 
     public Patient(Workspace workspace, String fullName, Integer defaultSessionFeeCents, Integer paymentDayOfMonth) {
@@ -173,5 +173,21 @@ public class Patient {
 
     public void setDefaultSessionFeeCents(Integer defaultSessionFeeCents) {
         this.defaultSessionFeeCents = defaultSessionFeeCents;
+    }
+
+    public Integer getPaymentDayOfMonth() {
+        return paymentDayOfMonth;
+    }
+
+    public void setPaymentDayOfMonth(Integer paymentDayOfMonth) {
+        this.paymentDayOfMonth = paymentDayOfMonth;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }
