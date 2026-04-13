@@ -190,4 +190,8 @@ public class Patient {
     public void setActive(Boolean active) {
         this.active = active;
     }
+
+    public void setId(UUID uuid) {
+
+    }
 }

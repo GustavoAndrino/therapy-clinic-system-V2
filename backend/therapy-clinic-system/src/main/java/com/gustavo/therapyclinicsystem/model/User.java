@@ -48,7 +48,7 @@ public class User {
     @OneToMany(mappedBy = "therapist", fetch = FetchType.LAZY)
     private List<Patient> patients = new ArrayList<>();
 
-    protected User(){}
+    public User(){}
 
     public User(Workspace workspace, String fullName, String email, String passwordHash, UserRole role) {
         this.workspace = workspace;
@@ -135,5 +135,9 @@ public class User {
 
     public void setWorkspace(Workspace workspace) {
         this.workspace = workspace;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 }

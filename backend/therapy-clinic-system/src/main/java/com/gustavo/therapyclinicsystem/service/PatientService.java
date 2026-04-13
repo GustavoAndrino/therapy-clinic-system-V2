@@ -120,6 +120,12 @@ public class PatientService {
         patient.setTherapist(therapist);
         patient.setFullName(request.fullName());
         patient.setEmail(request.email());
+        patient.setCpf(request.cpf());
+        patient.setCep(request.cep());
+        patient.setResponsibleCpf(request.responsibleCpf());
+        patient.setResponsibleName(request.responsibleName());
+        patient.setAddressLine(request.addressLine());
+        patient.setPhoneNumber(request.phoneNumber());
         patient.setAdminObservations(request.adminObservations());
         patient.setDefaultSessionFeeCents(request.defaultSessionFeeCents());
         patient.setPaymentDayOfMonth(request.paymentDayOfMonth());
