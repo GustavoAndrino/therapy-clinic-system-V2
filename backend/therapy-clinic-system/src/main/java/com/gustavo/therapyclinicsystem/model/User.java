@@ -20,19 +20,23 @@ public class User {
     @Column(nullable = false, length = 160)
     private String fullName;
 
-    @Column(nullable = false, length = 190)
+    @Column(nullable = false, length = 190, unique = true)
     private String email;
 
     @Column(nullable = false, length = 255)
     private String passwordHash;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private UserRole role = UserRole.THERAPIST;
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<WorkspaceMembership> workspaceMemberships =
+            new ArrayList<>();
 
     // Trial limiter (optional)
     @Column(nullable = false)
-    private Integer actionsRemaining = 20;
+    private Integer actionsRemaining = 20; // TODO: add calculation logic!
 
     @Column(nullable = false)
     private Boolean active = true;
@@ -41,21 +45,15 @@ public class User {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "workspace_id", nullable = false)
-    private Workspace workspace;
-
     @OneToMany(mappedBy = "therapist", fetch = FetchType.LAZY)
     private List<Patient> patients = new ArrayList<>();
 
     public User(){}
 
-    public User(Workspace workspace, String fullName, String email, String passwordHash, UserRole role) {
-        this.workspace = workspace;
+    public User(String fullName, String email, String passwordHash) {
         this.fullName = fullName;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.role = role;
     }
 
     public void addPatient(Patient patient) {
@@ -81,10 +79,6 @@ public class User {
         return actionsRemaining;
     }
 
-    public UserRole getRole() {
-        return role;
-    }
-
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -101,10 +95,6 @@ public class User {
         return id;
     }
 
-    public Workspace getWorkspace() {
-        return workspace;
-    }
-
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
@@ -115,10 +105,6 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
-    }
-
-    public void setRole(UserRole role) {
-        this.role = role;
     }
 
     public void setActionsRemaining(Integer actionsRemaining) {
@@ -133,11 +119,27 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    public void setWorkspace(Workspace workspace) {
-        this.workspace = workspace;
-    }
-
     public void setId(UUID id) {
         this.id = id;
     }
+
+    public List<WorkspaceMembership> getWorkspaceMemberships() {
+        return workspaceMemberships;
+    }
+
+    public void addWorkspaceMembership(
+            WorkspaceMembership membership
+    ) {
+        workspaceMemberships.add(membership);
+        membership.setUser(this);
+    }
+
+    public void removeWorkspaceMembership(
+            WorkspaceMembership membership
+    ) {
+        workspaceMemberships.remove(membership);
+        membership.setUser(null);
+    }
 }
+
+

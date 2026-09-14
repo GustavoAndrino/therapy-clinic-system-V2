@@ -12,6 +12,8 @@ import java.util.UUID;
 @Table(name = "workspaces")
 public class Workspace {
 
+    //TODO: add billing inforamtion in workspace
+
     @Id
     @GeneratedValue
     private UUID id;
@@ -30,8 +32,13 @@ public class Workspace {
     @Column(nullable = false, length = 20)
     private WorkspacePlan plan = WorkspacePlan.PERSONAL;
 
-    @OneToMany(mappedBy = "workspace", fetch = FetchType.LAZY)
-    private List<User> users = new ArrayList<>();
+    @OneToMany(
+            mappedBy = "workspace",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<WorkspaceMembership> memberships =
+            new ArrayList<>();
 
     public Workspace() {}
 
@@ -76,10 +83,6 @@ public class Workspace {
         return plan;
     }
 
-    public List<User> getUsers() {
-        return users;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -90,5 +93,23 @@ public class Workspace {
 
     public void setPlan(WorkspacePlan plan) {
         this.plan = plan;
+    }
+
+    public List<WorkspaceMembership> getMemberships() {
+        return memberships;
+    }
+
+    public void addMembership(
+            WorkspaceMembership membership
+    ) {
+        memberships.add(membership);
+        membership.setWorkspace(this);
+    }
+
+    public void removeMembership(
+            WorkspaceMembership membership
+    ) {
+        memberships.remove(membership);
+        membership.setWorkspace(null);
     }
 }

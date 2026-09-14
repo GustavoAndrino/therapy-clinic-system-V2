@@ -49,6 +49,7 @@ class PatientServiceTest {
     private User therapist;
     private CreatePatientRequest request;
 
+    //TODO: fiz tests based on model refactor
     @BeforeEach
     void setUp() {
         workspaceId = UUID.randomUUID();
