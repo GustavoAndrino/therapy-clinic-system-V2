@@ -1,7 +1,6 @@
 package com.gustavo.therapyclinicsystem.repository;
 
 import com.gustavo.therapyclinicsystem.model.WorkspaceMembership;
-import com.gustavo.therapyclinicsystem.model.enums.WorkspaceRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -23,11 +22,5 @@ public interface WorkspaceMembershipRepository
     boolean existsByUserIdAndWorkspaceId(
             UUID userId,
             UUID workspaceId
-    );
-
-    boolean existsByUserIdAndWorkspaceIdAndRole(
-            UUID userId,
-            UUID workspaceId,
-            WorkspaceRole role
     );
 }

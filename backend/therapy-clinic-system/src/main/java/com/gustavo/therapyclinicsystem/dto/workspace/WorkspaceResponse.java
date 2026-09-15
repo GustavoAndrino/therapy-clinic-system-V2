@@ -10,6 +10,7 @@ public record WorkspaceResponse(
         String name,
         String timezone,
         WorkspacePlan plan,
+        Integer actionsRemaining,
         Instant createdAt
 ) {
 }

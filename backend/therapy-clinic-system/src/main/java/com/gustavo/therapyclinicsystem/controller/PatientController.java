@@ -6,7 +6,6 @@ import com.gustavo.therapyclinicsystem.dto.patient.PatientSummaryResponse;
 import com.gustavo.therapyclinicsystem.service.PatientService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,12 +23,14 @@ public class PatientController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public PatientDetailsResponse createPatient(@Valid @RequestBody CreatePatientRequest request){
+    public PatientDetailsResponse createPatient(
+            @Valid @RequestBody CreatePatientRequest request
+    ) {
         return patientService.createPatient(request);
     }
 
     @GetMapping("/{patientId}")
-    public PatientDetailsResponse getPatientById(@PathVariable UUID patientId){
+    public PatientDetailsResponse getPatientById(@PathVariable UUID patientId) {
         return patientService.getPatientById(patientId);
     }
 
@@ -42,6 +43,4 @@ public class PatientController {
     public List<PatientSummaryResponse> getPatientsByTherapist(@PathVariable UUID therapistId) {
         return patientService.getPatientsByTherapist(therapistId);
     }
-
-
 }

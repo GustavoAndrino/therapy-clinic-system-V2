@@ -1,7 +1,6 @@
 package com.gustavo.therapyclinicsystem.controller;
 
 import com.gustavo.therapyclinicsystem.config.SecurityConfig;
-import tools.jackson.databind.json.JsonMapper;
 import com.gustavo.therapyclinicsystem.dto.patient.CreatePatientRequest;
 import com.gustavo.therapyclinicsystem.dto.patient.PatientDetailsResponse;
 import com.gustavo.therapyclinicsystem.dto.patient.PatientSummaryResponse;
@@ -16,6 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +24,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PatientController.class)
@@ -45,12 +44,14 @@ class PatientControllerTest {
 
     @Test
     void createPatient_shouldReturnCreated() throws Exception {
+        UUID userId = UUID.randomUUID();
         UUID workspaceId = UUID.randomUUID();
         UUID therapistId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
         CreatePatientRequest request = new CreatePatientRequest(
                 workspaceId,
+                userId,
                 therapistId,
                 "Maria Silva",
                 "12345678900",
@@ -103,7 +104,7 @@ class PatientControllerTest {
     }
 
     @Test
-    void createPatient_shouldReturnBadRequestWhenRequestIsInvalid() throws Exception {
+    void createPatient_shouldReturnBadRequestWhenUserIdIsMissing() throws Exception {
         UUID workspaceId = UUID.randomUUID();
         UUID therapistId = UUID.randomUUID();
 
@@ -111,12 +112,37 @@ class PatientControllerTest {
                 {
                     "workspaceId": "%s",
                     "therapistId": "%s",
+                    "fullName": "Maria Silva",
+                    "defaultSessionFeeCents": 20000,
+                    "paymentDayOfMonth": 10
+                }
+                """.formatted(workspaceId, therapistId);
+
+        mockMvc.perform(post("/patients")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.details").isArray());
+    }
+
+    @Test
+    void createPatient_shouldReturnBadRequestWhenRequestIsInvalid() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UUID workspaceId = UUID.randomUUID();
+        UUID therapistId = UUID.randomUUID();
+
+        String invalidJson = """
+                {
+                    "workspaceId": "%s",
+                    "userId": "%s",
+                    "therapistId": "%s",
                     "fullName": "",
                     "email": "not-an-email",
                     "defaultSessionFeeCents": -100,
                     "paymentDayOfMonth": 0
                 }
-                """.formatted(workspaceId, therapistId);
+                """.formatted(workspaceId, userId, therapistId);
 
         mockMvc.perform(post("/patients")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -155,7 +181,6 @@ class PatientControllerTest {
 
         mockMvc.perform(get("/patients/{patientId}", patientId))
                 .andExpect(status().isOk())
-                .andDo(print())
                 .andExpect(jsonPath("$.id").value(patientId.toString()))
                 .andExpect(jsonPath("$.fullName").value("Maria Silva"));
     }
@@ -178,11 +203,13 @@ class PatientControllerTest {
 
     @Test
     void createPatient_shouldReturnBadRequestForBusinessRuleViolation() throws Exception {
+        UUID userId = UUID.randomUUID();
         UUID workspaceId = UUID.randomUUID();
         UUID therapistId = UUID.randomUUID();
 
         CreatePatientRequest request = new CreatePatientRequest(
                 workspaceId,
+                userId,
                 therapistId,
                 "Maria Silva",
                 null,
@@ -200,7 +227,7 @@ class PatientControllerTest {
 
         when(patientService.createPatient(any(CreatePatientRequest.class)))
                 .thenThrow(new BusinessRuleException(
-                        "Therapist does not belong to the provided workspace"
+                        "Requesting user does not belong to the provided workspace"
                 ));
 
         mockMvc.perform(post("/patients")
@@ -209,7 +236,7 @@ class PatientControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message")
-                        .value("Therapist does not belong to the provided workspace"));
+                        .value("Requesting user does not belong to the provided workspace"));
     }
 
     @Test

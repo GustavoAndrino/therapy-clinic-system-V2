@@ -5,7 +5,11 @@ public enum WorkspaceRole {
     ADMIN,
     THERAPIST;
 
-    public boolean canCreatePatients(){
+    public boolean canCreatePatients() {
         return this == OWNER || this == ADMIN;
+    }
+
+    public boolean canBeAssignedPatients() {
+        return this == OWNER || this == THERAPIST;
     }
 }

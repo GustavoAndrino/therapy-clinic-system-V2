@@ -21,8 +21,8 @@ public class Patient {
     @JoinColumn(name = "workspace_id", nullable = false)
     private Workspace workspace;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "therapist_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "therapist_id")
     private User therapist;
 
     @Column(nullable = false, length = 160)
@@ -191,7 +191,7 @@ public class Patient {
         this.active = active;
     }
 
-    public void setId(UUID uuid) {
-
+    public void setId(UUID id) {
+        this.id = id;
     }
 }

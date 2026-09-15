@@ -33,6 +33,10 @@ public class Workspace {
     @Column(nullable = false, length = 20)
     private WorkspacePlan plan = WorkspacePlan.PERSONAL;
 
+    // Trial usage belongs to the billable workspace, not to an individual user.
+    @Column(nullable = false)
+    private Integer actionsRemaining = 20;
+
     @OneToMany(
             mappedBy = "workspace",
             cascade = CascadeType.ALL,
@@ -84,6 +88,10 @@ public class Workspace {
         return plan;
     }
 
+    public Integer getActionsRemaining() {
+        return actionsRemaining;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -94,6 +102,10 @@ public class Workspace {
 
     public void setPlan(WorkspacePlan plan) {
         this.plan = plan;
+    }
+
+    public void setActionsRemaining(Integer actionsRemaining) {
+        this.actionsRemaining = actionsRemaining;
     }
 
     public List<WorkspaceMembership> getMemberships() {

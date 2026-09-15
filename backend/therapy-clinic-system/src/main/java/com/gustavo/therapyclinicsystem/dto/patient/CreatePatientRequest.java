@@ -9,7 +9,8 @@ import java.util.UUID;
 
 public record CreatePatientRequest(
         @NotNull UUID workspaceId,
-        @NotNull UUID therapistId,
+        @NotNull UUID userId,
+        UUID therapistId,
         @NotBlank String fullName,
         String cpf,
         String responsibleName,

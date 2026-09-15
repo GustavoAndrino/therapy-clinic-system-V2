@@ -34,19 +34,12 @@ public class User {
     private List<WorkspaceMembership> workspaceMemberships =
             new ArrayList<>();
 
-    // Trial limiter (optional)
-    @Column(nullable = false)
-    private Integer actionsRemaining = 20; // TODO: add calculation logic!
-
     @Column(nullable = false)
     private Boolean active = true;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
-
-    @OneToMany(mappedBy = "therapist", fetch = FetchType.LAZY)
-    private List<Patient> patients = new ArrayList<>();
 
     public User(){}
 
@@ -56,16 +49,6 @@ public class User {
         this.passwordHash = passwordHash;
     }
 
-    public void addPatient(Patient patient) {
-        patients.add(patient);
-        patient.setTherapist(this);
-    }
-
-    public void removePatient(Patient patient) {
-        patients.remove(patient);
-        patient.setTherapist(null);
-    }
-
 
     public Instant getCreatedAt() {
         return createdAt;
@@ -73,10 +56,6 @@ public class User {
 
     public Boolean getActive() {
         return active;
-    }
-
-    public Integer getActionsRemaining() {
-        return actionsRemaining;
     }
 
     public String getPasswordHash() {
@@ -105,10 +84,6 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
-    }
-
-    public void setActionsRemaining(Integer actionsRemaining) {
-        this.actionsRemaining = actionsRemaining;
     }
 
     public void setActive(Boolean active) {
