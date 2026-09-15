@@ -8,7 +8,7 @@ import com.gustavo.therapyclinicsystem.model.Patient;
 import com.gustavo.therapyclinicsystem.model.User;
 import com.gustavo.therapyclinicsystem.model.UserRole;
 import com.gustavo.therapyclinicsystem.model.Workspace;
-import com.gustavo.therapyclinicsystem.model.WorkspacePlan;
+import com.gustavo.therapyclinicsystem.model.enums.WorkspacePlan;
 import com.gustavo.therapyclinicsystem.repository.PatientRepository;
 import com.gustavo.therapyclinicsystem.repository.UserRepository;
 import com.gustavo.therapyclinicsystem.repository.WorkspaceRepository;

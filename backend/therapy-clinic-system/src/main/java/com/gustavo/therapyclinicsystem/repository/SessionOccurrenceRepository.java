@@ -1,7 +1,7 @@
 package com.gustavo.therapyclinicsystem.repository;
 
 import com.gustavo.therapyclinicsystem.model.SessionOccurrence;
-import com.gustavo.therapyclinicsystem.model.SessionStatus;
+import com.gustavo.therapyclinicsystem.model.enums.SessionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.OffsetDateTime;

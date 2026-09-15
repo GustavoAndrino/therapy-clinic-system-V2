@@ -1,4 +1,4 @@
-package com.gustavo.therapyclinicsystem.model;
+package com.gustavo.therapyclinicsystem.model.enums;
 
 public enum WorkspacePlan {
     TRIAL,

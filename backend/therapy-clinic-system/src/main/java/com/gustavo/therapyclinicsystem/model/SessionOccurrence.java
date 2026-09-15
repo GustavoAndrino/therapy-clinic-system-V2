@@ -1,6 +1,6 @@
 package com.gustavo.therapyclinicsystem.model;
 
-import com.gustavo.therapyclinicsystem.model.*;
+import com.gustavo.therapyclinicsystem.model.enums.SessionStatus;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.OffsetDateTime;

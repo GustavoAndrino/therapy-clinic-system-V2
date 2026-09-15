@@ -8,8 +8,10 @@ import com.gustavo.therapyclinicsystem.exception.ResourceNotFoundException;
 import com.gustavo.therapyclinicsystem.model.Patient;
 import com.gustavo.therapyclinicsystem.model.User;
 import com.gustavo.therapyclinicsystem.model.Workspace;
+import com.gustavo.therapyclinicsystem.model.WorkspaceMembership;
 import com.gustavo.therapyclinicsystem.repository.PatientRepository;
 import com.gustavo.therapyclinicsystem.repository.UserRepository;
+import com.gustavo.therapyclinicsystem.repository.WorkspaceMembershipRepository;
 import com.gustavo.therapyclinicsystem.repository.WorkspaceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,13 +26,15 @@ public class PatientService {
     private final PatientRepository patientRepository;
     private final WorkspaceRepository workspaceRepository;
     private final UserRepository userRepository;
+    private final WorkspaceMembershipRepository wmr; // wmr short of the whole name
 
     public PatientService(PatientRepository patientRepository,
                           WorkspaceRepository workspaceRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository, WorkspaceMembershipRepository wmr) {
         this.patientRepository = patientRepository;
         this.workspaceRepository = workspaceRepository;
         this.userRepository = userRepository;
+        this.wmr = wmr;
     }
 
     public PatientDetailsResponse createPatient(CreatePatientRequest request) {
@@ -40,7 +44,11 @@ public class PatientService {
         User therapist = userRepository.findById(request.therapistId())
                 .orElseThrow(() -> new ResourceNotFoundException("Therapist not found: " + request.therapistId()));
 
-        validateTherapistBelongsToWorkspace(therapist, workspace);
+        WorkspaceMembership membership = wmr.findByUserIdAndWorkspaceId(therapist.getId(), workspace.getId())
+                        .orElseThrow(() ->
+                                new BusinessRuleException("User does not belong to this workspace"));
+
+        canCreatePatient(membership);
 
         Patient patient = buildPatient(request, workspace, therapist);
 
@@ -73,14 +81,22 @@ public class PatientService {
                 .toList();
     }
 
-    private void validateTherapistBelongsToWorkspace(User therapist, Workspace workspace) {
-        if (therapist.getWorkspace() == null || therapist.getWorkspace().getId() == null) {
-            throw new BusinessRuleException("Therapist is not linked to any workspace");
-        }
+    private void validateTherapistBelongsToWorkspace(UUID therapistId, UUID workspaceId) {
+        boolean belongs = wmr.existsByUserIdAndWorkspaceId(therapistId, workspaceId);
 
-        if (!therapist.getWorkspace().getId().equals(workspace.getId())) {
-            throw new BusinessRuleException("Therapist does not belong to the provided workspace");
+        if(!belongs){
+            throw new BusinessRuleException("Therapists does not belog to the provided workspace");
+        } //not being used right now
+    }
+
+    private void canCreatePatient(WorkspaceMembership membership){
+        if(!membership.getRole().canCreatePatients()){
+            throw new BusinessRuleException("User is not allowed to create patients in this workspace");
         }
+    }
+
+    private void canCreatePatient(WorkspaceMembershipRepository wmr){
+
     }
 
     private PatientSummaryResponse toSummaryResponse(Patient patient) {

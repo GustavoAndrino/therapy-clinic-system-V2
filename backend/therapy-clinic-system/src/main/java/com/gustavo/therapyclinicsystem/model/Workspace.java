@@ -1,5 +1,6 @@
 package com.gustavo.therapyclinicsystem.model;
 
+import com.gustavo.therapyclinicsystem.model.enums.WorkspacePlan;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 

@@ -1,7 +1,7 @@
 package com.gustavo.therapyclinicsystem.repository;
 
 import com.gustavo.therapyclinicsystem.model.Workspace;
-import com.gustavo.therapyclinicsystem.model.WorkspacePlan;
+import com.gustavo.therapyclinicsystem.model.enums.WorkspacePlan;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

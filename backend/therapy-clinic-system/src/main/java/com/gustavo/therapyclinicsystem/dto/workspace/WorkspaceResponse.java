@@ -1,6 +1,6 @@
 package com.gustavo.therapyclinicsystem.dto.workspace;
 
-import com.gustavo.therapyclinicsystem.model.WorkspacePlan;
+import com.gustavo.therapyclinicsystem.model.enums.WorkspacePlan;
 
 import java.time.Instant;
 import java.util.UUID;
