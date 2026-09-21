@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -113,10 +114,76 @@ public class PatientService {
                 .toList();
     }
 
+    @Transactional
+    public PatientDetailsResponse updateTherapistAssignment(
+            UUID patientId,
+            UUID therapistId,
+            UUID requestingUserId
+    ){
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Patient not found: " + patientId
+                        )
+                );
+
+        UUID workspaceId = patient.getWorkspace().getId();
+
+        WorkspaceMembership requestingMembership = workspaceMembershipRepository
+                .findByUserIdAndWorkspaceId(requestingUserId, workspaceId)
+                .orElseThrow(() ->
+                        new BusinessRuleException(
+                                "Requesting user does not belong to the provided workspace"
+                        )
+                );
+
+        validateCanManagePatient(requestingMembership);
+
+        if (therapistId == null) {
+            patient.setTherapist(null);
+        } else {
+
+            User therapist = userRepository.findById(therapistId).orElseThrow(() ->
+                    new ResourceNotFoundException("Therapist not found: " + therapistId));
+
+            WorkspaceMembership therapistMembership =
+                    workspaceMembershipRepository
+                            .findByUserIdAndWorkspaceId(
+                                    therapist.getId(),
+                                    workspaceId
+                            )
+                            .orElseThrow(() ->
+                                    new BusinessRuleException(
+                                            "Therapist does not belong to workspace"
+                                    )
+                            );
+
+            if (!therapistMembership.getRole().canBeAssignedPatients()) {
+                throw new BusinessRuleException(
+                        "User cannot be assigned as a therapist"
+                );
+            }
+
+            patient.setTherapist(therapist);
+        }
+
+        Patient savedPatient = patientRepository.save(patient);
+
+        return toDetailsResponse(savedPatient);
+    }
+
     private void validateCanCreatePatient(WorkspaceMembership membership) {
         if (!membership.getRole().canCreatePatients()) {
             throw new BusinessRuleException(
                     "User is not allowed to create patients in this workspace"
+            );
+        }//HERE
+    }
+
+    private void validateCanManagePatient(WorkspaceMembership membership) {
+        if (!membership.getRole().canManagePatients()) {
+            throw new BusinessRuleException(
+                    "User is not allowed to manage patients in this workspace"
             );
         }
     }

@@ -9,6 +9,10 @@ public enum WorkspaceRole {
         return this == OWNER || this == ADMIN;
     }
 
+    public boolean canManagePatients() {
+        return this == OWNER || this == ADMIN;
+    }
+
     public boolean canBeAssignedPatients() {
         return this == OWNER || this == THERAPIST;
     }
