@@ -4,6 +4,7 @@ import com.gustavo.therapyclinicsystem.dto.user.LoginRequest;
 import com.gustavo.therapyclinicsystem.exception.ResourceNotFoundException;
 import com.gustavo.therapyclinicsystem.model.User;
 import com.gustavo.therapyclinicsystem.repository.UserRepository;
+import com.gustavo.therapyclinicsystem.security.CustomUserDetails;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,11 +37,11 @@ public class AuthService {
                         )
                 );
 
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found")
-                );
+        CustomUserDetails userDetails =
+                (CustomUserDetails) authentication.getPrincipal();
 
-        return jwtService.generateToken(user.getId());
+        return jwtService.generateToken(
+                userDetails.getId()
+        );
     }
 }
