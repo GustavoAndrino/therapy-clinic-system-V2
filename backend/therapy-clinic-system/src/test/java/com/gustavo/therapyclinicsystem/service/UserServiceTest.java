@@ -1,6 +1,7 @@
 package com.gustavo.therapyclinicsystem.service;
 
 import com.gustavo.therapyclinicsystem.dto.user.CreateUserRequest;
+import com.gustavo.therapyclinicsystem.exception.EmailAlreadyExistsException;
 import com.gustavo.therapyclinicsystem.model.User;
 import com.gustavo.therapyclinicsystem.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,27 @@ public class UserServiceTest {
 
         verify(passwordEncoder)
                 .encode("MyPassword123");
+    }
+
+    @Test
+    void shouldRejectDuplicateEmail() {
+
+        CreateUserRequest request =
+                new CreateUserRequest(
+                        "Test User",
+                        "test@test.com",
+                        "password123"
+                );
+
+        when(userRepository.existsByEmail("test@test.com"))
+                .thenReturn(true);
+
+        assertThrows(
+                EmailAlreadyExistsException.class,
+                () -> userService.createUser(request)
+        );
+
+        verify(userRepository, never()).save(any(User.class));
     }
     }
 
