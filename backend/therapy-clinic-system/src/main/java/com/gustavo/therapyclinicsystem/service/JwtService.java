@@ -1,6 +1,7 @@
 package com.gustavo.therapyclinicsystem.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
@@ -34,14 +35,29 @@ public class JwtService {
                 .compact();
     }
 
-    public UUID extractUserId(String token) {
+    private Claims extractAllClaims(String token) {
 
-        Claims claims = Jwts.parser()
+        return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
 
-        return UUID.fromString(claims.getSubject());
+    public UUID extractUserId(String token) {
+
+        Claims claims = extractAllClaims(token);
+
+            return UUID.fromString(claims.getSubject());
+    }
+
+    public boolean isTokenValid(String token) {
+
+        try {
+            extractAllClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 }

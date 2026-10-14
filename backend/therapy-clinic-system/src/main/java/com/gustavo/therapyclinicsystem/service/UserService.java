@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
+import java.util.UUID;
 
 
 @Service
@@ -61,6 +62,7 @@ public class UserService {
                 savedUser.getActive()
         );
     }
+
 
     //TODO forgot password
     /*public String forgotPassword (String email){
