@@ -13,6 +13,7 @@ import com.gustavo.therapyclinicsystem.repository.PatientRepository;
 import com.gustavo.therapyclinicsystem.repository.UserRepository;
 import com.gustavo.therapyclinicsystem.repository.WorkspaceMembershipRepository;
 import com.gustavo.therapyclinicsystem.repository.WorkspaceRepository;
+import com.gustavo.therapyclinicsystem.security.CurrentUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,17 +29,20 @@ public class PatientService {
     private final WorkspaceRepository workspaceRepository;
     private final UserRepository userRepository;
     private final WorkspaceMembershipRepository workspaceMembershipRepository;
+    private final CurrentUserService currentUserService;
 
     public PatientService(
             PatientRepository patientRepository,
             WorkspaceRepository workspaceRepository,
             UserRepository userRepository,
-            WorkspaceMembershipRepository workspaceMembershipRepository
+            WorkspaceMembershipRepository workspaceMembershipRepository,
+            CurrentUserService currentUserService
     ) {
         this.patientRepository = patientRepository;
         this.workspaceRepository = workspaceRepository;
         this.userRepository = userRepository;
         this.workspaceMembershipRepository = workspaceMembershipRepository;
+        this.currentUserService = currentUserService;
     }
 
     public PatientDetailsResponse createPatient(CreatePatientRequest request) {
@@ -50,14 +54,14 @@ public class PatientService {
                 );
 
         WorkspaceMembership requestingMembership = workspaceMembershipRepository
-                .findByUserIdAndWorkspaceId(request.userId(), workspace.getId())
+                .findByUserIdAndWorkspaceId(currentUserService.getUserId(), workspace.getId())
                 .orElseThrow(() ->
                         new BusinessRuleException(
                                 "Requesting user does not belong to the provided workspace"
                         )
                 );
 
-        validateCanCreatePatient(requestingMembership);
+        validateCanManagePatients(requestingMembership);
 
         User therapist = null;
 
@@ -86,8 +90,10 @@ public class PatientService {
         return toDetailsResponse(savedPatient);
     }
 
-    @Transactional(readOnly = true)
-    public PatientDetailsResponse getPatientById(UUID patientId) {
+    public PatientDetailsResponse assignTherapistToPatient(
+            UUID patientId,
+            UUID therapistId
+    ) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -95,30 +101,52 @@ public class PatientService {
                         )
                 );
 
-        return toDetailsResponse(patient);
-    }
+        Workspace workspace = patient.getWorkspace();
 
-    @Transactional(readOnly = true)
-    public List<PatientSummaryResponse> getPatientsByWorkspace(UUID workspaceId) {
-        return patientRepository.findByWorkspaceId(workspaceId)
-                .stream()
-                .map(this::toSummaryResponse)
-                .toList();
-    }
+        WorkspaceMembership requestingMembership =
+                workspaceMembershipRepository
+                        .findByUserIdAndWorkspaceId(
+                                currentUserService.getUserId(),
+                                workspace.getId()
+                        )
+                        .orElseThrow(() ->
+                                new BusinessRuleException(
+                                        "Requesting user does not belong to the patient's workspace"
+                                )
+                        );
 
-    @Transactional(readOnly = true)
-    public List<PatientSummaryResponse> getPatientsByTherapist(UUID therapistId) {
-        return patientRepository.findByTherapistId(therapistId)
-                .stream()
-                .map(this::toSummaryResponse)
-                .toList();
+        validateCanManagePatients(requestingMembership);
+
+        User therapist = userRepository.findById(therapistId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Therapist not found: " + therapistId
+                        )
+                );
+
+        WorkspaceMembership therapistMembership =
+                workspaceMembershipRepository
+                        .findByUserIdAndWorkspaceId(
+                                therapist.getId(),
+                                workspace.getId()
+                        )
+                        .orElseThrow(() ->
+                                new BusinessRuleException(
+                                        "Therapist does not belong to the patient's workspace"
+                                )
+                        );
+
+        validateCanBeAssignedAsTherapist(therapistMembership);
+
+        patient.setTherapist(therapist);
+
+        return toDetailsResponse(patientRepository.save(patient));
     }
 
     @Transactional
     public PatientDetailsResponse updateTherapistAssignment(
             UUID patientId,
-            UUID therapistId,
-            UUID requestingUserId
+            UUID therapistId
     ){
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() ->
@@ -130,14 +158,14 @@ public class PatientService {
         UUID workspaceId = patient.getWorkspace().getId();
 
         WorkspaceMembership requestingMembership = workspaceMembershipRepository
-                .findByUserIdAndWorkspaceId(requestingUserId, workspaceId)
+                .findByUserIdAndWorkspaceId(currentUserService.getUserId(), workspaceId)
                 .orElseThrow(() ->
                         new BusinessRuleException(
                                 "Requesting user does not belong to the provided workspace"
                         )
                 );
 
-        validateCanManagePatient(requestingMembership);
+        validateCanManagePatients(requestingMembership);
 
         if (therapistId == null) {
             patient.setTherapist(null);
@@ -172,15 +200,38 @@ public class PatientService {
         return toDetailsResponse(savedPatient);
     }
 
-    private void validateCanCreatePatient(WorkspaceMembership membership) {
-        if (!membership.getRole().canCreatePatients()) {
-            throw new BusinessRuleException(
-                    "User is not allowed to create patients in this workspace"
-            );
-        }//HERE
+    @Transactional(readOnly = true)
+    public PatientDetailsResponse getPatientById(UUID patientId) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Patient not found: " + patientId
+                        )
+                );
+
+        return toDetailsResponse(patient);
     }
 
-    private void validateCanManagePatient(WorkspaceMembership membership) {
+    @Transactional(readOnly = true)
+    public List<PatientSummaryResponse> getPatientsByWorkspace(UUID workspaceId) {
+        return patientRepository.findByWorkspaceId(workspaceId)
+                .stream()
+                .map(this::toSummaryResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PatientSummaryResponse> getPatientsByTherapist(UUID therapistId) {
+        return patientRepository.findByTherapistId(therapistId)
+                .stream()
+                .map(this::toSummaryResponse)
+                .toList();
+    }
+
+
+    //Helper functions
+
+    private void validateCanManagePatients(WorkspaceMembership membership) {
         if (!membership.getRole().canManagePatients()) {
             throw new BusinessRuleException(
                     "User is not allowed to manage patients in this workspace"

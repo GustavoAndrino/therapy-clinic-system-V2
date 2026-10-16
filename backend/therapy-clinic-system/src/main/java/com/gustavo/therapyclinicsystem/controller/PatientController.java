@@ -29,6 +29,17 @@ public class PatientController {
         return patientService.createPatient(request);
     }
 
+    @PutMapping("/{patientId}/therapist/{therapistId}")
+    public PatientDetailsResponse updateTherapistAssignment(
+            @PathVariable UUID patientId,
+            @PathVariable UUID therapistId
+    ) {
+        return patientService.updateTherapistAssignment(
+                patientId,
+                therapistId
+        );
+    }
+
     @GetMapping("/{patientId}")
     public PatientDetailsResponse getPatientById(@PathVariable UUID patientId) {
         return patientService.getPatientById(patientId);
