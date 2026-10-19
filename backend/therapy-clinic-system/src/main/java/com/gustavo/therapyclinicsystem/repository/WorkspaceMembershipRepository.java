@@ -23,4 +23,6 @@ public interface WorkspaceMembershipRepository
             UUID userId,
             UUID workspaceId
     );
+
+    List<WorkspaceMembership> findAllByUserId(UUID userId); //TODO delete later
 }

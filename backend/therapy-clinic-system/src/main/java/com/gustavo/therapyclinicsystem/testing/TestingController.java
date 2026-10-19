@@ -1,16 +1,15 @@
 package com.gustavo.therapyclinicsystem.testing;
 
 import com.gustavo.therapyclinicsystem.service.PatientService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Profile;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 //TODO delete later, this is to facilitate some testings
 @RestController
 @RequestMapping("/test")
+@Profile("dev")
 public class TestingController {
 
     private final TestingService testingService;
@@ -24,4 +23,11 @@ public class TestingController {
         return testingService.getUserId(email);
     }
 
+
+    @GetMapping("/user-details")
+    public TestingUserDetailsResponse getUserDetails(
+            @RequestParam String email
+    ) {
+        return testingService.getUserDetails(email);
+    }
 }
