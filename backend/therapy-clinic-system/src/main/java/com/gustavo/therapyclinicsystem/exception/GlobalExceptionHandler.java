@@ -11,6 +11,7 @@ import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.naming.AuthenticationException;
 import java.time.Instant;
 import java.util.List;
 
@@ -148,6 +149,50 @@ public class GlobalExceptionHandler {
                 status.value(),
                 status.getReasonPhrase(),
                 ex.getMessage(),
+                request.getRequestURI(),
+                List.of()
+        );
+
+        return ResponseEntity
+                .status(status)
+                .body(response);
+    }
+
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<ApiErrorResponse> handleForbiddenOperation(
+            ForbiddenOperationException ex,
+            HttpServletRequest request
+    ) {
+
+        HttpStatus status = HttpStatus.FORBIDDEN;
+
+        ApiErrorResponse response = new ApiErrorResponse(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                List.of()
+        );
+
+        return ResponseEntity
+                .status(status)
+                .body(response);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(
+            AuthenticationException ex,
+            HttpServletRequest request
+    ) {
+
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+
+        ApiErrorResponse response = new ApiErrorResponse(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                "Invalid authentication credentials",
                 request.getRequestURI(),
                 List.of()
         );

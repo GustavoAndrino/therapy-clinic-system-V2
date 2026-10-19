@@ -4,6 +4,7 @@ import com.gustavo.therapyclinicsystem.dto.patient.CreatePatientRequest;
 import com.gustavo.therapyclinicsystem.dto.patient.PatientDetailsResponse;
 import com.gustavo.therapyclinicsystem.dto.patient.PatientSummaryResponse;
 import com.gustavo.therapyclinicsystem.exception.BusinessRuleException;
+import com.gustavo.therapyclinicsystem.exception.ForbiddenOperationException;
 import com.gustavo.therapyclinicsystem.exception.ResourceNotFoundException;
 import com.gustavo.therapyclinicsystem.model.Patient;
 import com.gustavo.therapyclinicsystem.model.User;
@@ -56,7 +57,7 @@ public class PatientService {
         WorkspaceMembership requestingMembership = workspaceMembershipRepository
                 .findByUserIdAndWorkspaceId(currentUserService.getUserId(), workspace.getId())
                 .orElseThrow(() ->
-                        new BusinessRuleException(
+                        new ForbiddenOperationException(
                                 "Requesting user does not belong to the provided workspace"
                         )
                 );
@@ -160,7 +161,7 @@ public class PatientService {
         WorkspaceMembership requestingMembership = workspaceMembershipRepository
                 .findByUserIdAndWorkspaceId(currentUserService.getUserId(), workspaceId)
                 .orElseThrow(() ->
-                        new BusinessRuleException(
+                        new ForbiddenOperationException(
                                 "Requesting user does not belong to the provided workspace"
                         )
                 );
@@ -233,7 +234,7 @@ public class PatientService {
 
     private void validateCanManagePatients(WorkspaceMembership membership) {
         if (!membership.getRole().canManagePatients()) {
-            throw new BusinessRuleException(
+            throw new ForbiddenOperationException(
                     "User is not allowed to manage patients in this workspace"
             );
         }
@@ -241,7 +242,7 @@ public class PatientService {
 
     private void validateCanBeAssignedAsTherapist(WorkspaceMembership membership) {
         if (!membership.getRole().canBeAssignedPatients()) {
-            throw new BusinessRuleException(
+            throw new ForbiddenOperationException(
                     "Assigned user cannot act as a therapist in this workspace"
             );
         }

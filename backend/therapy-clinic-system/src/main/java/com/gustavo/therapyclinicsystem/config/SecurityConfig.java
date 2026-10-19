@@ -2,6 +2,8 @@ package com.gustavo.therapyclinicsystem.config;
 
 import com.gustavo.therapyclinicsystem.security.CustomUserDetailsService;
 import com.gustavo.therapyclinicsystem.security.JwtAuthenticationFilter;
+import com.gustavo.therapyclinicsystem.security.RestAccessDeniedHandler;
+import com.gustavo.therapyclinicsystem.security.RestAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,11 +25,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            JwtAuthenticationFilter jwtAuthenticationFilter
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            RestAuthenticationEntryPoint authenticationEntryPoint,
+            RestAccessDeniedHandler accessDeniedHandler
     ) throws Exception {
 
         return http
-
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session ->
@@ -36,13 +39,25 @@ public class SecurityConfig {
                         )
                 )
 
+                .exceptionHandling(exception ->
+                        exception
+                                .authenticationEntryPoint(
+                                        authenticationEntryPoint
+                                )
+                                .accessDeniedHandler(
+                                        accessDeniedHandler
+                                )
+                )
+
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers(
                                 HttpMethod.POST,
-                                "/auth/login"
+                                "/auth/login",
+                                "/auth/signup"
                         ).permitAll()
 
+                        // TODO(dev-only): remove when /auth/signup replaces it
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/users"
@@ -58,7 +73,6 @@ public class SecurityConfig {
 
                 .build();
     }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(); 
