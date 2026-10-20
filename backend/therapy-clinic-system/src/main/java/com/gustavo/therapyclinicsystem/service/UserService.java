@@ -1,6 +1,7 @@
 package com.gustavo.therapyclinicsystem.service;
 
 import com.gustavo.therapyclinicsystem.dto.user.CreateUserRequest;
+import com.gustavo.therapyclinicsystem.dto.user.CreateWorkspaceRequest;
 import com.gustavo.therapyclinicsystem.dto.user.UserSummaryResponse;
 import com.gustavo.therapyclinicsystem.exception.BusinessRuleException;
 import com.gustavo.therapyclinicsystem.exception.EmailAlreadyExistsException;
@@ -10,7 +11,6 @@ import com.gustavo.therapyclinicsystem.model.Workspace;
 import com.gustavo.therapyclinicsystem.model.WorkspaceMembership;
 import com.gustavo.therapyclinicsystem.model.enums.WorkspacePlan;
 import com.gustavo.therapyclinicsystem.model.enums.WorkspaceRole;
-import com.gustavo.therapyclinicsystem.model.enums.WorkspaceType;
 import com.gustavo.therapyclinicsystem.repository.UserRepository;
 import com.gustavo.therapyclinicsystem.repository.WorkspaceMembershipRepository;
 import com.gustavo.therapyclinicsystem.repository.WorkspaceRepository;
@@ -43,8 +43,46 @@ public class UserService {
 
 
     @Transactional
-    public UserSummaryResponse createUser(CreateUserRequest request) {
+    public User createUserWithWorkspace(
+            CreateUserRequest userRequest,
+            CreateWorkspaceRequest workspaceRequest
+    ) {
 
+        User user = createAndSaveUser(userRequest);
+
+        Workspace workspace = createAndSaveWorkspace(
+                user,
+                workspaceRequest
+        );
+
+        createAndSaveMembership(
+                user,
+                workspace,
+                WorkspaceRole.OWNER
+        );
+
+        return user;//TODO CHANGE TO SUMMARY
+    }
+
+    @Transactional
+    public User createUserForExistingWorkspace(
+            CreateUserRequest userRequest,
+            Workspace workspace,
+            WorkspaceRole role
+    ) {
+
+        User user = createAndSaveUser(userRequest);
+
+        createAndSaveMembership(
+                user,
+                workspace,
+                role
+        );
+
+        return user;//todo change to summary
+    }
+
+    private User createAndSaveUser(CreateUserRequest request) {
         String email = request.email()
                 .trim()
                 .toLowerCase(Locale.ROOT);
@@ -57,64 +95,69 @@ public class UserService {
 
         User user = new User();
 
-        user.setFullName(request.fullName());
+        user.setFullName(request.fullName().trim());
         user.setEmail(email);
-
-        String passwordHash =
-                passwordEncoder.encode(request.password());
-
-        user.setPasswordHash(passwordHash);
-        user.setActive(true); //TODO Leave true for testing, set false later
-        User savedUser = userRepository.save(user);
-
-
-        Workspace workspace = getWorkspace(request);
-
-        Workspace savedWorkspace = workspaceRepository.save(workspace);
-
-        WorkspaceMembership membership = new WorkspaceMembership();
-        membership.setUser(savedUser);
-        membership.setWorkspace(savedWorkspace);
-        membership.setRole(WorkspaceRole.OWNER);
-
-        workspaceMembershipRepository.save(membership);
-
-
-
-        return new UserSummaryResponse(
-                savedUser.getId(),
-                savedUser.getFullName(),
-                savedUser.getEmail(),
-                savedUser.getActive()
+        user.setPasswordHash(
+                passwordEncoder.encode(request.password())
         );
+        user.setActive(true);
+
+        return userRepository.save(user);
     }
 
-    private static @NonNull Workspace getWorkspace(CreateUserRequest request) {
-        String workspaceName;
-
-        if (request.workspaceType() == WorkspaceType.INDIVIDUAL) {
-
-            workspaceName = request.fullName().trim();
-
-        } else {
-
-            if (request.workspaceName() == null ||
-                    request.workspaceName().isBlank()) {
-
-                throw new BusinessRuleException(
-                        "Workspace name is required for clinic accounts"
-                );
-            }
-
-            workspaceName = request.workspaceName().trim();
-        }
-
+    private Workspace createAndSaveWorkspace(User user, CreateWorkspaceRequest request) {
         Workspace workspace = new Workspace();
 
+        String workspaceName;
+
+        switch (request.plan()) {
+
+            case TRIAL ->
+                    workspaceName =
+                            user.getFullName() + " Trial Workspace";
+
+            case PERSONAL ->
+                    workspaceName =
+                            user.getFullName() + " Workspace";
+
+            case CLINIC -> {
+                if (request.workspaceName() == null ||
+                        request.workspaceName().isBlank()) {
+
+                    throw new BusinessRuleException(
+                            "Workspace name is required for clinic plans"
+                    );
+                }
+
+                workspaceName =
+                        request.workspaceName().trim();
+            }
+
+            default ->
+                    throw new BusinessRuleException(
+                            "Invalid workspace plan"
+                    );
+        }
+
         workspace.setName(workspaceName);
-        workspace.setPlan(WorkspacePlan.TRIAL);
-        return workspace;
+        workspace.setPlan(request.plan());
+
+        return workspaceRepository.save(workspace);
     }
+
+    private void createAndSaveMembership(User user, Workspace workspace, WorkspaceRole role) {
+        WorkspaceMembership membership =
+                new WorkspaceMembership();
+
+        membership.setUser(user);
+        membership.setWorkspace(workspace);
+        membership.setRole(role);
+
+        workspaceMembershipRepository.save(membership);
+    }
+
+
+
 
 
     //TODO forgot password
