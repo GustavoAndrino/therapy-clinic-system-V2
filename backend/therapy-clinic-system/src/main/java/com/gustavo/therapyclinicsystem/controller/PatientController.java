@@ -2,6 +2,7 @@ package com.gustavo.therapyclinicsystem.controller;
 
 import com.gustavo.therapyclinicsystem.dto.patient.CreatePatientRequest;
 import com.gustavo.therapyclinicsystem.dto.patient.PatientDetailsResponse;
+import com.gustavo.therapyclinicsystem.dto.patient.PatientResponse;
 import com.gustavo.therapyclinicsystem.dto.patient.PatientSummaryResponse;
 import com.gustavo.therapyclinicsystem.service.PatientService;
 import jakarta.validation.Valid;
@@ -41,7 +42,7 @@ public class PatientController {
     }
 
     @GetMapping("/{patientId}")
-    public PatientDetailsResponse getPatientById(@PathVariable UUID patientId) {
+    public PatientResponse getPatientById(@PathVariable UUID patientId) {
         return patientService.getPatientById(patientId);
     }
 

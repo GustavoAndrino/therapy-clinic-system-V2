@@ -9,5 +9,5 @@ public record PatientSummaryResponse(
         String email,
         Integer paymentDayOfMonth,
         Boolean active
-) {
+) implements PatientResponse{
 }

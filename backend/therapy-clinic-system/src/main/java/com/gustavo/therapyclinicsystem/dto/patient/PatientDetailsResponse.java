@@ -18,5 +18,5 @@ public record PatientDetailsResponse(
         Integer defaultSessionFeeCents,
         Integer paymentDayOfMonth,
         Boolean active
-) {
+) implements PatientResponse {
 }

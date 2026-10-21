@@ -1,8 +1,6 @@
 package com.gustavo.therapyclinicsystem.service;
 
-import com.gustavo.therapyclinicsystem.dto.patient.CreatePatientRequest;
-import com.gustavo.therapyclinicsystem.dto.patient.PatientDetailsResponse;
-import com.gustavo.therapyclinicsystem.dto.patient.PatientSummaryResponse;
+import com.gustavo.therapyclinicsystem.dto.patient.*;
 import com.gustavo.therapyclinicsystem.exception.BusinessRuleException;
 import com.gustavo.therapyclinicsystem.exception.ForbiddenOperationException;
 import com.gustavo.therapyclinicsystem.exception.ResourceNotFoundException;
@@ -10,6 +8,7 @@ import com.gustavo.therapyclinicsystem.model.Patient;
 import com.gustavo.therapyclinicsystem.model.User;
 import com.gustavo.therapyclinicsystem.model.Workspace;
 import com.gustavo.therapyclinicsystem.model.WorkspaceMembership;
+import com.gustavo.therapyclinicsystem.model.enums.WorkspaceRole;
 import com.gustavo.therapyclinicsystem.repository.PatientRepository;
 import com.gustavo.therapyclinicsystem.repository.UserRepository;
 import com.gustavo.therapyclinicsystem.repository.WorkspaceMembershipRepository;
@@ -202,20 +201,79 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true)
-    public PatientDetailsResponse getPatientById(UUID patientId) {
+    public PatientResponse getPatientById(UUID patientId) {
+
+        UUID requestingUserId = currentUserService.getUserId();
+
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Patient not found: " + patientId
-                        )
+                        new ResourceNotFoundException("Patient not found")
                 );
 
-        return toDetailsResponse(patient);
+        User therapist = patient.getTherapist();
+
+        if (therapist != null &&
+                therapist.getId().equals(requestingUserId)) {
+
+            return toClinicalDetailsResponse(patient);
+        }
+
+        WorkspaceMembership membership =
+                workspaceMembershipRepository
+                        .findByUserIdAndWorkspaceId(
+                                requestingUserId,
+                                patient.getWorkspace().getId()
+                        )
+                        .orElseThrow(() ->
+                                new ForbiddenOperationException(
+                                        "User does not have access to this patient"
+                                )
+                        );
+
+        if (membership.getRole() == WorkspaceRole.OWNER ||
+                membership.getRole() == WorkspaceRole.ADMIN) {
+
+            return toDetailsResponse(patient);
+        }
+
+        throw new ForbiddenOperationException(
+                "User does not have access to this patient"
+        );
     }
 
     @Transactional(readOnly = true)
-    public List<PatientSummaryResponse> getPatientsByWorkspace(UUID workspaceId) {
-        return patientRepository.findByWorkspaceId(workspaceId)
+    public List<PatientSummaryResponse> getPatientsByWorkspace(
+            UUID workspaceId
+    ) {
+
+        UUID requestingUserId =
+                currentUserService.getUserId();
+
+        WorkspaceMembership membership =
+                workspaceMembershipRepository
+                        .findByUserIdAndWorkspaceId(
+                                requestingUserId,
+                                workspaceId
+                        )
+                        .orElseThrow(() ->
+                                new ForbiddenOperationException(
+                                        "User does not have access to this workspace"
+                                )
+                        );
+
+        if (membership.getRole() == WorkspaceRole.THERAPIST) {
+            return patientRepository
+                    .findByWorkspaceIdAndTherapistId(
+                            workspaceId,
+                            requestingUserId
+                    )
+                    .stream()
+                    .map(this::toSummaryResponse)
+                    .toList();
+        }
+
+        return patientRepository
+                .findByWorkspaceId(workspaceId)
                 .stream()
                 .map(this::toSummaryResponse)
                 .toList();
@@ -227,7 +285,7 @@ public class PatientService {
                 .stream()
                 .map(this::toSummaryResponse)
                 .toList();
-    }
+    } //TODO Maybe this is pointless, since it would produce a confusing list of all patients from multiple workspaces
 
 
     //Helper functions
@@ -278,6 +336,29 @@ public class PatientService {
                 patient.getDefaultSessionFeeCents(),
                 patient.getPaymentDayOfMonth(),
                 patient.getActive()
+        );
+    }
+
+    private PatientClinicalDetailsResponse toClinicalDetailsResponse(Patient patient) {
+        return new PatientClinicalDetailsResponse(
+                patient.getId(),
+                patient.getWorkspace().getId(),
+                patient.getTherapist() != null
+                        ? patient.getTherapist().getId()
+                        : null,
+                patient.getFullName(),
+                patient.getCpf(),
+                patient.getResponsibleName(),
+                patient.getResponsibleCpf(),
+                patient.getAddressLine(),
+                patient.getCep(),
+                patient.getPhoneNumber(),
+                patient.getEmail(),
+                patient.getAdminObservations(),
+                patient.getDefaultSessionFeeCents(),
+                patient.getPaymentDayOfMonth(),
+                patient.getActive(),
+                patient.getTherapistClinicalObservations()
         );
     }
 

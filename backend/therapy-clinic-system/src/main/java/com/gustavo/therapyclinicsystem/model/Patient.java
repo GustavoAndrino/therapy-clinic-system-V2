@@ -53,6 +53,9 @@ public class Patient {
     @Column(columnDefinition = "TEXT")
     private String adminObservations;
 
+    @Column(columnDefinition = "TEXT")
+    private String therapistClinicalObservations;
+
     @Column(nullable = false)
     private Integer defaultSessionFeeCents;
 
@@ -89,6 +92,10 @@ public class Patient {
 
     public User getTherapist() {
         return therapist;
+    }
+
+    public UUID getTherapistId(){
+        return getTherapistId();
     }
 
     public void setTherapist(User therapist) {
@@ -166,6 +173,12 @@ public class Patient {
     public void setAdminObservations(String adminObservations) {
         this.adminObservations = adminObservations;
     }
+
+    public String getTherapistClinicalObservations(){
+        return therapistClinicalObservations;
+    }
+
+    public void setTherapistClinicalObservations(String therapistClinicalObservations){this.therapistClinicalObservations = therapistClinicalObservations;}
 
     public Integer getDefaultSessionFeeCents() {
         return defaultSessionFeeCents;
