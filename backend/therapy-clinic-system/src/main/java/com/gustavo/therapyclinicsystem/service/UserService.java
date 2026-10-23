@@ -27,62 +27,16 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final WorkspaceRepository workspaceRepository;
     private final PasswordEncoder passwordEncoder;
-    private final WorkspaceMembershipRepository workspaceMembershipRepository;
 
     public UserService(
             UserRepository userRepository, WorkspaceRepository workspaceRepository,
             PasswordEncoder passwordEncoder, WorkspaceMembershipRepository workspaceMembershipRepository
     ) {
         this.userRepository = userRepository;
-        this.workspaceRepository = workspaceRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.workspaceMembershipRepository = workspaceMembershipRepository;
-    }
+        this.passwordEncoder = passwordEncoder;    }
 
-
-    @Transactional
-    public User createUserWithWorkspace(
-            CreateUserRequest userRequest,
-            CreateWorkspaceRequest workspaceRequest
-    ) {
-
-        User user = createAndSaveUser(userRequest);
-
-        Workspace workspace = createAndSaveWorkspace(
-                user,
-                workspaceRequest
-        );
-
-        createAndSaveMembership(
-                user,
-                workspace,
-                WorkspaceRole.OWNER
-        );
-
-        return user;//TODO CHANGE TO SUMMARY
-    }
-
-    @Transactional
-    public User createUserForExistingWorkspace(
-            CreateUserRequest userRequest,
-            Workspace workspace,
-            WorkspaceRole role
-    ) {
-
-        User user = createAndSaveUser(userRequest);
-
-        createAndSaveMembership(
-                user,
-                workspace,
-                role
-        );
-
-        return user;//todo change to summary
-    }
-
-    private User createAndSaveUser(CreateUserRequest request) {
+    public User createAndSaveUser(CreateUserRequest request) {
         String email = request.email()
                 .trim()
                 .toLowerCase(Locale.ROOT);
@@ -104,61 +58,6 @@ public class UserService {
 
         return userRepository.save(user);
     }
-
-    private Workspace createAndSaveWorkspace(User user, CreateWorkspaceRequest request) {
-        Workspace workspace = new Workspace();
-
-        String workspaceName;
-
-        switch (request.plan()) {
-
-            case TRIAL ->
-                    workspaceName =
-                            user.getFullName() + " Trial Workspace";
-
-            case PERSONAL ->
-                    workspaceName =
-                            user.getFullName() + " Workspace";
-
-            case CLINIC -> {
-                if (request.workspaceName() == null ||
-                        request.workspaceName().isBlank()) {
-
-                    throw new BusinessRuleException(
-                            "Workspace name is required for clinic plans"
-                    );
-                }
-
-                workspaceName =
-                        request.workspaceName().trim();
-            }
-
-            default ->
-                    throw new BusinessRuleException(
-                            "Invalid workspace plan"
-                    );
-        }
-
-        workspace.setName(workspaceName);
-        workspace.setPlan(request.plan());
-
-        return workspaceRepository.save(workspace);
-    }
-
-    private void createAndSaveMembership(User user, Workspace workspace, WorkspaceRole role) {
-        WorkspaceMembership membership =
-                new WorkspaceMembership();
-
-        membership.setUser(user);
-        membership.setWorkspace(workspace);
-        membership.setRole(role);
-
-        workspaceMembershipRepository.save(membership);
-    }
-
-
-
-
 
     //TODO forgot password
     /*public String forgotPassword (String email){
