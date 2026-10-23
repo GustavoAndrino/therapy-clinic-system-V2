@@ -21,8 +21,6 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request
     ) {
 
-        String token = authService.login(request);
-
-        return new LoginResponse(token);
+        return authService.login(request);
     }
 }

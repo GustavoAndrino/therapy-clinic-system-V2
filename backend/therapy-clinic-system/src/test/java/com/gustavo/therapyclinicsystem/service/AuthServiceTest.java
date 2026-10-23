@@ -1,6 +1,7 @@
 package com.gustavo.therapyclinicsystem.service;
 
 import com.gustavo.therapyclinicsystem.dto.user.LoginRequest;
+import com.gustavo.therapyclinicsystem.dto.user.LoginResponse;
 import com.gustavo.therapyclinicsystem.security.CustomUserDetails;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,7 +61,8 @@ class AuthServiceTest {
         when(jwtService.generateToken(userId))
                 .thenReturn("fake-jwt-token");
 
-        String token = authService.login(request);
+        LoginResponse response = authService.login(request);
+        String token = response.token();
 
         assertEquals("fake-jwt-token", token);
 
