@@ -9,11 +9,9 @@ public record SessionOccurrenceSummaryResponse(
         UUID id,
         UUID patientId,
         String patientName,
-        UUID therapistId,
         OffsetDateTime startsAt,
         OffsetDateTime endsAt,
         SessionStatus status,
-        Boolean paid,
-        Integer feeCents
+        Boolean paid
 ) {
 }

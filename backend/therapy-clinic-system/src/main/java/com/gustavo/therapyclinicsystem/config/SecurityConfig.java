@@ -57,12 +57,6 @@ public class SecurityConfig {
                                 "/auth/signup"
                         ).permitAll()
 
-                        // TODO(dev-only): remove when /auth/signup replaces it
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/users"
-                        ).permitAll()
-
                         .anyRequest().authenticated()
                 )
 

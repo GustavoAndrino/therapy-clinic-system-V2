@@ -23,9 +23,8 @@ public class SignUpService {
     }
 
     @Transactional
-    public UserSummaryResponse createUserWithWorkspace(
-            CreateUserRequest userRequest,
-            CreateWorkspaceRequest workspaceRequest
+    public UserSummaryResponse createUserAndWorkspace(
+            CreateUserRequest userRequest
     ) {
 
         User user = userService.createAndSaveUser(userRequest);

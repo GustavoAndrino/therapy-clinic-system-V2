@@ -4,6 +4,7 @@ import com.gustavo.therapyclinicsystem.model.SessionOccurrence;
 import com.gustavo.therapyclinicsystem.model.enums.SessionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +27,13 @@ public interface SessionOccurrenceRepository extends JpaRepository<SessionOccurr
             UUID patientId,
             OffsetDateTime start,
             OffsetDateTime end
+    );
+
+    List<SessionOccurrence>
+    findByTherapistIdAndStartAtBetweenOrderByStartAtAsc(
+            UUID therapistId,
+            Instant from,
+            Instant to
     );
 
     List<SessionOccurrence> findByPatientIdAndStatusAndPaidFalse(

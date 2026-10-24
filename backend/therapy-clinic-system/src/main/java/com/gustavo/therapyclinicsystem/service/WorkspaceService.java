@@ -43,6 +43,7 @@ public class WorkspaceService {
             throw new BusinessRuleException(
                     "Workspace name is required"
             );
+        }
 
             workspace.setName(
                     request.workspaceName().trim()

@@ -11,7 +11,6 @@ public record SessionOccurrenceDetailsResponse(
         UUID workspaceId,
         UUID scheduleId,
         UUID patientId,
-        UUID therapistId,
         OffsetDateTime startsAt,
         OffsetDateTime endsAt,
         SessionStatus status,
