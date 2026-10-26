@@ -25,7 +25,7 @@ public class SessionOccurrence {
     private Workspace workspace;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "schedule_id", nullable = false)
+    @JoinColumn(name = "schedule_id", nullable = true)
     private RecurringSchedule schedule;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)

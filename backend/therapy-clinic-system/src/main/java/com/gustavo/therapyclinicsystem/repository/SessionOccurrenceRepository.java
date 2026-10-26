@@ -32,12 +32,18 @@ public interface SessionOccurrenceRepository extends JpaRepository<SessionOccurr
     List<SessionOccurrence>
     findByTherapistIdAndStartAtBetweenOrderByStartAtAsc(
             UUID therapistId,
-            Instant from,
-            Instant to
+            OffsetDateTime from,
+            OffsetDateTime to
     );
 
     List<SessionOccurrence> findByPatientIdAndStatusAndPaidFalse(
             UUID patientId,
             SessionStatus status
+    );
+
+    boolean existsByTherapistIdAndStartAtLessThanAndEndAtGreaterThan(
+            UUID therapistId,
+            OffsetDateTime newEnd,
+            OffsetDateTime newStart
     );
 }

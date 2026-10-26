@@ -8,10 +8,10 @@ import java.util.UUID;
 public record SessionOccurrenceSummaryResponse(
         UUID id,
         UUID patientId,
-        String patientName,
+        UUID therapistId,
+        UUID workspaceId,
         OffsetDateTime startsAt,
         OffsetDateTime endsAt,
-        SessionStatus status,
-        Boolean paid
-) {
-}
+        Integer feeCents,
+        SessionStatus status
+) {}
