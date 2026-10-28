@@ -1,15 +1,9 @@
 package com.gustavo.therapyclinicsystem.service;
 
-import com.gustavo.therapyclinicsystem.dto.session.CreateSessionOccurrenceRequest;
-import com.gustavo.therapyclinicsystem.dto.session.SessionCalendarResponse;
-import com.gustavo.therapyclinicsystem.dto.session.SessionOccurrenceSummaryResponse;
+import com.gustavo.therapyclinicsystem.dto.session.*;
 import com.gustavo.therapyclinicsystem.exception.BusinessRuleException;
 import com.gustavo.therapyclinicsystem.exception.ResourceNotFoundException;
-import com.gustavo.therapyclinicsystem.model.Patient;
-import com.gustavo.therapyclinicsystem.model.SessionOccurrence;
-import com.gustavo.therapyclinicsystem.model.User;
-import com.gustavo.therapyclinicsystem.model.Workspace;
-import com.gustavo.therapyclinicsystem.model.enums.SessionStatus;
+import com.gustavo.therapyclinicsystem.model.*;
 import com.gustavo.therapyclinicsystem.repository.PatientRepository;
 import com.gustavo.therapyclinicsystem.repository.SessionOccurrenceRepository;
 import com.gustavo.therapyclinicsystem.repository.UserRepository;
@@ -22,14 +16,14 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class SessionOccurrenceService {
+public class SessionsService {
 
     private final SessionOccurrenceRepository sessionRepository;
     private final CurrentUserService currentUserService;
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
 
-    public SessionOccurrenceService(
+    public SessionsService(
             SessionOccurrenceRepository sessionRepository,
             CurrentUserService currentUserService,
             PatientRepository patientRepository,
@@ -125,6 +119,8 @@ public class SessionOccurrenceService {
         return toSummaryResponse(savedSession);
     }
 
+
+
     private SessionCalendarResponse toCalendarResponse(
             SessionOccurrence session
     ) {
@@ -154,6 +150,34 @@ public class SessionOccurrenceService {
                 session.getEndsAt(),
                 session.getFeeCents(),
                 session.getStatus()
+        );
+    }
+
+    private RecurringScheduleResponse toResponse(
+            RecurringSchedule schedule
+    ) {
+
+        return new RecurringScheduleResponse(
+                schedule.getId(),
+
+                schedule.getWorkspace().getId(),
+                schedule.getWorkspace().getName(),
+
+                schedule.getPatient().getId(),
+                schedule.getPatient().getFullName(),
+
+                schedule.getTherapist().getId(),
+                schedule.getTherapist().getFullName(),
+
+                schedule.getDayOfWeek(),
+                schedule.getStartTime(),
+                schedule.getDurationMinutes(),
+
+                schedule.getStartDate(),
+                schedule.getEndDate(),
+
+                schedule.getIntervalWeeks(),
+                schedule.getActive()
         );
     }
 }

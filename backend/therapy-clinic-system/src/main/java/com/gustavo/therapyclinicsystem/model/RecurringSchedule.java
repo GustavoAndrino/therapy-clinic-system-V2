@@ -52,10 +52,13 @@ public class RecurringSchedule {
     private LocalDate startDate;
     private LocalDate endDate;
 
+    @Column(name = "interval_weeks", nullable = false)
+    private Integer intervalWeeks = 1;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
-    protected RecurringSchedule() {}
+    public RecurringSchedule() {}
 
     public RecurringSchedule(Workspace workspace, Patient patient, User therapist,
                              DayOfWeek dayOfWeek, LocalTime startTime, Integer durationMinutes) {
@@ -150,4 +153,9 @@ public class RecurringSchedule {
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
+
+    public Integer getIntervalWeeks(){return intervalWeeks;}
+
+    public void setIntervalWeeks(Integer intervalWeeks){this.intervalWeeks = intervalWeeks;}
+
 }

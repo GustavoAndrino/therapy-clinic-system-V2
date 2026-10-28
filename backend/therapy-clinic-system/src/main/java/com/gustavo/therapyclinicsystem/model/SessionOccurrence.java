@@ -60,7 +60,7 @@ public class SessionOccurrence {
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
-    protected SessionOccurrence() {}
+    public SessionOccurrence() {}
 
     public SessionOccurrence(Workspace workspace, RecurringSchedule schedule, Patient patient, User therapist,
                              OffsetDateTime startsAt, OffsetDateTime endsAt, Integer feeCents) {

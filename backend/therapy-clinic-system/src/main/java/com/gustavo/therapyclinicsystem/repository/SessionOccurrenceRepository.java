@@ -46,4 +46,12 @@ public interface SessionOccurrenceRepository extends JpaRepository<SessionOccurr
             OffsetDateTime newEnd,
             OffsetDateTime newStart
     );
+
+    List<SessionOccurrence>
+    findByTherapistIdAndStartAtLessThanAndEndAtGreaterThan(
+            UUID therapistId,
+            OffsetDateTime endAt,
+            OffsetDateTime startAt
+    );
+
 }
